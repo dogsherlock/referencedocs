@@ -25,6 +25,7 @@ Alt+Esc在打开的窗口之间按首次打开的顺序切换(然后使用Win+ar
 Ctrl+W关闭当前打开的一个页面
 Alt+F4关闭当前窗口
 Win+E打开文件资源管理器
+Win+I打开Windows设置
 Ctrl+Shift+Esc任务管理器(taskmgr命令)
 Ctrl+T重新打开一个tab
 Ctrl+N重新打开一个窗口(浏览器/文件资源管理器等等)
@@ -84,7 +85,7 @@ Ctrl+G跳转到指定行和列
 Ctrl+Tab 切换标签页
 Ctrl+Shift+u对选中单词切换大小写
 Shift+Shift全局搜索
-Ctrl+N搜索选中的当前类      
+Ctrl+N快速检索类      
 Ctrl+F12 搜索当前文件类的方法
 Alt+7 展示类的Structure 可以看到类的属性和方法
 Ctrl+Alt+< 回到上一步
@@ -128,10 +129,8 @@ pycharm and idea:
 如果继承图太多，也可以手动删除一些不必要的子图，便于我们更加清晰地观察我们想要的继承关系
 当然，如果觉得文字或者结构图太小，按住Alt还能有放大镜功能
 Ctrl+B跳转到定义处
-Ctrl+Alt+B查看实现的类, 也可以跳转到方法实现处
+Ctrl+Alt+B查看方法/类的实现类
 CTRL+SHIFT+I 快速在当前文件中查看某一个类的内容
-CPU: $(((Get-CimInstance -Namespace root/WMI -ClassName MSAcpi_ThermalZoneTemperature)[0].CurrentTemperature - 2731.5) / 10) C
-CPU: $(((Get-CimInstance -Namespace root/WMI -ClassName MSAcpi_ThermalZoneTemperature)[0].CurrentTemperature - 2731.5) / 10) C
 覆写方法之间的跳转
 从子类覆写override的方法跳转到父类的方法或者从子类跳到父类 ctrl+u
 从父类的方法跳转到子类复写的override的方法 ctrl+alt+b
@@ -149,12 +148,20 @@ Alt+字母 打开菜单栏上的对应字母开头的小标签
 Ctrl+Shift+Alt+C 保存引用路径,适合快速复制类名等的所在路径
 Ctrl+E 查看最近使用的文件
 Ctrl+W递进式选择代码块
+Ctrl+D复制行
 Ctrl+Y删除光标所在行或删除选中的行
 Ctrl+X剪切光标所在行或剪切选中内容
 Ctrl+Delete删除光标后面的单词
 Ctrl+Alt+Shift+C 在当前文件中Copy Rerference
-
-
+Ctrl+Alt+L格式化代码
+Ctrl+O重写方法
+Ctrl+N查找类
+Ctrl+Shift+N查找文件
+Ctrl+J插入代码模板
+Ctrl+/单行注释
+Ctrl+Shift+/多行注释
+Alt+Insert打开Generate小窗口(Constructor/toString()/Override Methods/Delegation Methods
+/Test())
 
 Show Solution Windows:
 Alt+F1 
@@ -163,10 +170,21 @@ Alt+F1
 打开导航栏
 在资源管理器中打开当前文件所在目录
 
+新增类：
+1. 选中新建类所在的包，鼠标右键弹出框
+2. 选中新建类所在的包, Alt+Insert弹出框
+3. 当编辑界面打开的文件和新建类在同一个包时,直接按Ctrl+Alt+Insert弹出框
 ```
 ___
 
 > cmder
+
+设置默认编码是utf8
+Settings->Startup->Environment:
+```
+chcp 65001
+set LANG=zh_CN.UTF-8
+```
 
 ```
 新建tab ctrl+t(也可以新建浏览器tab)
@@ -303,4 +321,13 @@ ___
 ##### vscode 
 ```
 ctrl+j 隐藏或显示terminal
+ctrl+tab或者alt+number切换已经打开的文件
+Ctrl + ] / [ 缩进/突出行 Indent/outdent line
+
+Ctrl+G 转到某一行go to line
+Ctrl+P 转到文件 Go to File
+
+Ctrl+H 当前页面单词替换或全部替换
+
+Ctrl+Shift+F 全局搜索
 ```

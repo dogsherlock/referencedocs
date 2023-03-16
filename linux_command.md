@@ -374,6 +374,18 @@ eg: chown ossuser:ossgroup install.log 文件拥有者为ossuser,用户组为oss
 taskkill /F /PID 1304
 
 
+* cmd控制台编码格式的设置
+查看控制台的编码格式(默认是gbk, 即936): chcp
+
+设置编码格式为utf8: chcp 65001
+
+永久设置: 
+1. regedit打开注册表->计算机\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Command Processor->
+新建字符串值->名称为AutoRun,数据为chcp 65001
+
+2. windows10->cmd->intl.cpl->Administrative, 选择Beta: Use Unicode UTF-8 for worldwide language support然后重启
+
+
 ###### ps command
 ps:
 The ps command displays active processes

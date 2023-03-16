@@ -199,12 +199,21 @@ git diff branch1 branch2显示出所有有差异的文件的详细差异
 git diff branch1 branch2 --stat显示出所有有差异的文件列表
 git diff branch1 branch2 file显示指定文件的详细差异
 ```
+
+顺序: 工作区、暂存区、版本库
 * 工作区修改之后还没有暂存起来的变化内容(工作区vs暂存区)
 `git diff `
 * 暂存起来的文件和上次提交时的快照之间的差异(暂存区vs版本库)
-`git diff --cached或git diff --staged`
+`git diff --cached或git diff --cached --stat
 * 工作区vs版本库
 `git diff head`
+* 只显示修改的名字
+git diff --name-only
+* 显示某个文件的变化
+git diff -- filepath
+
+
+
 
 
 

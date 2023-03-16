@@ -4,6 +4,13 @@
 
 
 ##### maven
+maven提供了一系列的成熟的插件: http://maven.apache.org/plugins/index.html
+
+
+###### maven约定的目录结构
+src/main/java src/main/resources src/test/java src/test/resources
+target/classes/com.xxx.xx target/generated-sources/annotations target/maven-archiver 
+target/maven-status target/xxx.jar
 
 ###### settings.xml位置
 1. <localRepository>标签指定本地下载的依赖在本地的保存位置
@@ -192,7 +199,86 @@ install指令做了两件事情:
 </build>
 ```
 
-###### 常见label的含义
+
+###### 常见插件
+* 编译器插件
+通过编译器插件，我们可以配置使用的jdk或者说编译器的版本
+
+在settings.xml文件中配置全局编译器插件,找到profiles节点，在里面加入profile节点
+```property
+<profile>
+      <!--  setting.xml中的id指定jdk版本号-->
+      <id>jdk-1.8</id>
+      <!-- 开启编译器的使用 -->
+      <activation>
+        <activeByDefault>true</activeByDefault>
+        <jdk>1.8</jdk>
+      </activation>
+
+      <properties>
+        <!-- 配置编译器信息(source源信息、target字节码信息、compiler编译过程版本)-->
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.compilerVersion>1.8</maven.compiler.compilerVersion>
+      </properties>
+</profile>
+```
+
+可以给特定项目配置编译器插件: pom.xml配置片段
+```properties
+<!-- 配置maven的编译插件 -->
+<build>
+    <plugins>
+    <!-- jdk编译插件 -->
+        <plugin>
+            <!-- 插件坐标 -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.2</version>
+            <configuration>
+                <!-- 源代码使用jdk版本 -->
+                <source>1.7</source>
+                <!-- 源代码编译为class文件的版本，要保持跟上面版本一致 -->
+                <target>1.7</target>
+                <encoding>UTF-8</encoding>
+            </connfiguration>
+        </plugin>
+    </plugins>
+</build>
+```
+
+* 资源拷贝插件
+maven在打包时默认只将src/main/resources里的配置文件拷贝到项目中并作打包处理，
+打包后的配置文件就在target/classes中和字节码文件在一起,而非resource目录下的配置文件在打包时不会添加到项目中
+
+如果想把非resources下面的文件也打包到classes下面,需要配置pom.xml如下:
+```properties
+<build>
+    <resources>
+        <resource>
+            <directory>src/main/java</directory>
+            <includes>
+                <include>**/*.xml</include>
+            </includes>
+        </resource>
+        <resource>
+            <directory>src/main/resources</directory>
+            <includes>
+                <include>**/*.xml</include>
+                <include>**/*.properties</include>
+            </includes>
+        </resource>
+    </resources>
+</build>
+```
+
+
+* tomcat插件
+将tomcat内嵌到web项目中快速启动
+
+##### 常见标签的含义
+* modelVersion
+描述这个POM文件是遵从哪个版本的项目描述符
 * mirrorOf
 
 > 为某个仓库repository做镜像, 填写的是repository id, * 匹配所有的仓库
@@ -228,7 +314,28 @@ mirrorOf=external:*  //如果本地库存在就用本地库的，如果本地没
 
 * packaging
 
-> 项目的发布形式jar war rar pom maven-plugin ear ejb par
+> 项目的发布形式jar war rar pom maven-plugin ear ejb par, 默认是jar
+
+pom: 用在父级工程或聚合工程中，用来做jar包的版本控制，必须指明这个聚合工程的打包方式为pom
+```properties
+<packaging>pom</packaging>
+
+<modules>
+    <module>guns-base</module>
+    <module>guns-sys</module>
+    <module>guns-vip-main</module>
+    <module>guns-base-sms</module>
+</modules>
+```
+module即子项目中为:
+```properties
+<packaging>jar</packaging>
+或者
+<packaging>war</packaging>
+```
+聚合工程只是用来帮助其他模块构建的工具，本身并没有实质的内容。具体每个工程代码的编写还是在
+生成的工程中去写。
+
 
 
 * profile
@@ -246,7 +353,7 @@ profile可以让我们定义一系列的配置信息,然后指定其激活条件
       </activation>
 
       <properties>
-        <!-- 配置编译器信息 -->
+        <!-- 配置编译器信息(源信息、字节码信息、编译过程版本)-->
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.compilerVersion>1.8</maven.compiler.compilerVersion>
@@ -261,7 +368,13 @@ profile可以让我们定义一系列的配置信息,然后指定其激活条件
 中声明一个版本号即可。子类就会使用子类声明的版本号，不继承于父类版本号。
 
 eg:
+父工程设置
 ```property
+<groupId>com.msb</groupId>
+<artifactId>MavenDemo</artifactId>
+<version>1.0-SNAPSHOT</version>
+<packaging>pom</packaging>
+
 <dependencyManagement>
     <dependencies>
         <dependency>
@@ -275,7 +388,15 @@ eg:
 </dependencyManagement>
 ```
 
+子工程设置:
 ```property
+<parent>
+    <groupId>com.msb</groupId>
+    <artifactId>MavenDemo</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <relativePath>../MavenDemo/pom.xml</relativePath>
+</parent>
+
 <dependencies>
        <dependency>
            <groupId>mysql</groupId>
@@ -285,12 +406,52 @@ eg:
 ```
 
 
-dependencyManagement和dependncyManagement区别:
+dependencyManagement和dependencies的区别:
 1. Dependencies相对于dependencyManagement，所有生命在dependencies里的依赖都会自动引入，并默认被所有的子项目继承。
 
-2. dependencyManagement里只是声明依赖，并不自动实现引入，因此子项目需要显示的声明需要用的依赖。如果不在子项目中声明依赖，
-是不会从父项目中继承下来的；只有在子项目中写了该依赖项，并且没有指定具体版本，才会从父项目中继承该项，并且version和scope
-都读取自父pom;另外如果子项目中指定了版本号，那么会使用子项目中指定的jar版本。
+2. dependencyManagement里只是声明依赖，并不自动实现引入，因此子项目需要显示的声明需要用的依赖。如果不在子项目中声明依赖，是不会从父项目中继承下来的；只有在子项目中写了该依赖项，并且没有指定具体版本，才会从父项目中继承该项，并且version和scope都读取自父pom;另外如果子项目中指定了版本号，那么会使用子项目中指定的jar版本。
+
+
+* pluginManagement
+maven使用dependencyManagement对依赖进行管理, 类似的, maven中还提供了一个名为pluginManagement的标签，可以
+管理maven插件. 在pluginManagement的元素中可以声明插件及插件的配置，但不会发生实际的插件调用行为.只有在POM
+中配置了真正的plugin元素,且其groupId和artifactId与pluginManagement元素中配置的插件匹配时，pluginManagement标签的配置才会影响到实际的插件行为.
+
+eg: 
+假如存在两个项目，项目A为项目B的父项目，其关系通过POM文件的关系确定.项目A的父POM文件片段如下:
+```properties
+<pluginManagement>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>2.1</version>
+            <configuration>
+                <attach>true</attach>
+            </configuration>
+            <executions>
+                <execution>
+                    <phase>compile</phase>
+                    <goals>
+                        <goal>jar</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</pluginManagement>
+```
+
+如果项目B也想使用该plugin配置，则在项目B的子pom文件中只需要如下配置：
+```properties
+<plugins>
+    <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+    </plugin>
+</plugins>
+```
+
 
 ###### multi-moduls
 
@@ -398,3 +559,66 @@ javac -encoding utf8 xxx.java(制定了file.encoding为utf8)
 > 在一下两种情况中的任何一种情况下触摸它:
 > StackOverflowError(堆栈大小大于限制), 增加值
 > OutofMemoryError: 无法创建新的本地线程(线程太多，每个线程都有很大的堆栈), 减少它
+
+
+
+
+##### 部署
+
+##### war包部署
+war包是在进行java web开发时打包的格式，里面包括java代码,还可能有html/css/js前段代码，开发完成后，
+都需要把源码打包成war到linux服务器上进行发布
+* windows下使用tomcat运行war包
+1. 将war包拷贝至tomcat安装路径下webapps文件夹
+2. 在bin目录下运行startup.bat
+3. 访问项目，访问路径为http://localhost:8080/war包名称/
+4. 修改项目访问路径, shutdown.bat关闭tomcat,在安装路径下conf/server.xml中
+修改Host->Context节点`<Context path="/demo" docBase="springboot-gradle-1.0-SNAPSHOT" reloadable="true"/>`
+docBase指定war包名称,path指定访问路径,reloadable指定是否热部署
+5. 重新启动项目并访问http://localhost:8080/指定的路径/
+
+* linux使用tomcat运行war包
+与windows类似
+
+
+* 使用idea部署到外部本地的tomcat上
+使用插件Smart Tomcat, EditConfiguration选择Smart Tomcat进行简单配置 
+
+* 将tomcat内嵌到web项目中
+
+使用maven-archetype-webapp模板快速创建一个web项目，在pom.xml进行如下配置:
+```properties
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.tomcat.maven</groupId>
+            <artifactId>tomcat7-maven-plugin</artifactId>
+            <version>2.2</version>
+
+            <configuration>
+                <!-- 项目访问路径localhost:9090/sayhello -->
+                <path>/sayhello</path>
+                <port>8080</port>
+                <uriEncoding>UTF-8</uriEncoding>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+```
+
+在Maven->Plugins->tomcat7->tomcat7:run双击运行或mvn tomcat7:run运行
+```
+tomcat7:run   -- 启动嵌入式tomcat ，并运行当前项目
+tomcat7:deploy  -- 部署一个web war包
+tomcat7:reload  -- 重新加载web war包
+tomcat7:start    -- 启动tomcat
+tomcat7:stop    -- 停止tomcat
+tomcat7:undeploy  -- 停止一个war包
+
+mvn tomcat7:deploy   //第一次
+mvn tomcat7:redeploy   //之后
+```
+
+使用内嵌的tomcat插件进行debug
+Edit Configuration->Run/Debug Configurations->+->Maven->设置name,将Run填写为
+tomcat7:run->Apply->Run/Debug
