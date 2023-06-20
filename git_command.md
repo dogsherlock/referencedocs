@@ -210,7 +210,7 @@ git diff branch1 branch2 file显示指定文件的详细差异
 * 只显示修改的名字
 git diff --name-only
 * 显示某个文件的变化
-git diff -- filepath
+git diff --stat filename
 
 
 

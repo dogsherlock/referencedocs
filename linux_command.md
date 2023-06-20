@@ -377,7 +377,7 @@ taskkill /F /PID 1304
 * cmd控制台编码格式的设置
 查看控制台的编码格式(默认是gbk, 即936): chcp
 
-设置编码格式为utf8: chcp 65001
+当前控制台窗口设置编码格式为utf8: chcp 65001
 
 永久设置: 
 1. regedit打开注册表->计算机\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Command Processor->

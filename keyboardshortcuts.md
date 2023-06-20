@@ -5,15 +5,9 @@
 > 当然，最重要的是可以装逼!
 ___
 
-
-
-
-
-
 ##### Keyboard shortcuts I often use
 
 > Windows
-
 ```
 Ctrl+Number
 ALT+Esc 使当前窗口最小化
@@ -55,6 +49,7 @@ Shift+Ctrl+A 搜索操作会显示快捷方式，方便我们查找
 Shift+Shift查找任何内容
 Ctrl+Alt+L reformat code 将当前文件格式化
 Shift+Ctrl+Enter完整当前语句, 比如打印出for、if、switch、while、try会自动补全
+Ctrl+Alt+Shift+C 在类文件中选择类名后使用此快捷键可以Copy Reference
 Ctrl+Alt+T添加块: if, for, try...catch with
 Ctrl+Ctrl 运行一些命令，比如打开一些编辑器,cmder等等, 它同时会显示最近的历史记录
 Alt+F7找到使用的地方(find usage)
@@ -145,6 +140,8 @@ Alt+字母 打开菜单栏上的对应字母开头的小标签
 > intelij idea 
 > 
 ```
+Ctrl+"+/-" 展开、折叠方法
+Ctrl+Shift+"+/-" 展开、折叠全部方法
 Ctrl+Shift+Alt+C 保存引用路径,适合快速复制类名等的所在路径
 Ctrl+E 查看最近使用的文件
 Ctrl+W递进式选择代码块
@@ -162,6 +159,7 @@ Ctrl+/单行注释
 Ctrl+Shift+/多行注释
 Alt+Insert打开Generate小窗口(Constructor/toString()/Override Methods/Delegation Methods
 /Test())
+Ctrl+O 打开Select Methods to Override/Implement
 
 Show Solution Windows:
 Alt+F1 
@@ -231,6 +229,7 @@ Alt+number切换tab
 > chrome 
 
 ```
+Shift+ESC打开chrome的任务管理
 F11 全屏模式 再次按下退出全屏模式
 Esc 停止加载页面或者从页面中下载
 Ctrl+/Ctrl- 代替鼠标缩放页面
@@ -247,6 +246,10 @@ Ctrl+H 使用新的tab打开历史记录
 Ctrl+J 查看chrome正在下载的内容
 
 Ctrl+Shift+T 打开最后一次关闭的tab
+
+Ctrl+O 选择文件在chrome中打开此文件
+
+Ctrl+Shift+N 在隐身模式下打开新窗口
 
 F12/Ctrl Shitf J打开开发者工具中的控制台
 
@@ -330,4 +333,11 @@ Ctrl+P 转到文件 Go to File
 Ctrl+H 当前页面单词替换或全部替换
 
 Ctrl+Shift+F 全局搜索
+
+Ctrl+Shift+P 显示相关插件的命令
+
+Ctrl+Shift+C 打开cmd窗口
+
+
+Ctrl +/- vscode窗口全体字体大小设置: 放大/缩小效果
 ```

@@ -2,7 +2,6 @@
 后续不定期更新
 
 
-
 ##### maven
 maven提供了一系列的成熟的插件: http://maven.apache.org/plugins/index.html
 
@@ -62,6 +61,160 @@ target/maven-status target/xxx.jar
 > 超级POM的位置(中央仓库的默认配置)
 中央仓库的默认配置是http://repo1.maven.org/maven2, 配置在maven-model-buider-版本号.jar的
 org\apache\maven\model\pom-4.0.9.xml超级pom中, 所有的POM均继承此文件
+
+如下是maven-model-builder-3.8.6.jar中的pom-4.0.9.xml
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+<!-- START SNIPPET: superpom -->
+<project>
+  <modelVersion>4.0.0</modelVersion>
+
+  <repositories>
+    <repository>
+      <id>central</id>
+      <name>Central Repository</name>
+      <url>https://repo.maven.apache.org/maven2</url>
+      <layout>default</layout>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>central</id>
+      <name>Central Repository</name>
+      <url>https://repo.maven.apache.org/maven2</url>
+      <layout>default</layout>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <releases>
+        <updatePolicy>never</updatePolicy>
+      </releases>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <build>
+    <directory>${project.basedir}/target</directory>
+    <outputDirectory>${project.build.directory}/classes</outputDirectory>
+    <finalName>${project.artifactId}-${project.version}</finalName>
+    <testOutputDirectory>${project.build.directory}/test-classes</testOutputDirectory>
+    <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+    <scriptSourceDirectory>${project.basedir}/src/main/scripts</scriptSourceDirectory>
+    <testSourceDirectory>${project.basedir}/src/test/java</testSourceDirectory>
+    <resources>
+      <resource>
+        <directory>${project.basedir}/src/main/resources</directory>
+      </resource>
+    </resources>
+    <testResources>
+      <testResource>
+        <directory>${project.basedir}/src/test/resources</directory>
+      </testResource>
+    </testResources>
+    <pluginManagement>
+      <!-- NOTE: These plugins will be removed from future versions of the super POM -->
+      <!-- They are kept for the moment as they are very unlikely to conflict with lifecycle mappings (MNG-4453) -->
+      <plugins>
+        <plugin>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>1.3</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>2.2-beta-5</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>2.8</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>2.5.3</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <reporting>
+    <outputDirectory>${project.build.directory}/site</outputDirectory>
+  </reporting>
+
+  <profiles>
+    <!-- NOTE: The release profile will be removed from future versions of the super POM -->
+    <profile>
+      <id>release-profile</id>
+
+      <activation>
+        <property>
+          <name>performRelease</name>
+          <value>true</value>
+        </property>
+      </activation>
+
+      <build>
+        <plugins>
+          <plugin>
+            <inherited>true</inherited>
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <inherited>true</inherited>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <inherited>true</inherited>
+            <artifactId>maven-deploy-plugin</artifactId>
+            <configuration>
+              <updateReleaseInfo>true</updateReleaseInfo>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+</project>
+<!-- END SNIPPET: superpom -->
+```
 
 
 ###### 依赖下载基本优先级
@@ -248,8 +401,9 @@ install指令做了两件事情:
 ```
 
 * 资源拷贝插件
-maven在打包时默认只将src/main/resources里的配置文件拷贝到项目中并作打包处理，
-打包后的配置文件就在target/classes中和字节码文件在一起,而非resource目录下的配置文件在打包时不会添加到项目中
+负责将配置文件复制到编译目录中.默认的编译目录为target/classes
+maven只会关注src/main/resources、src/test/resources目录下的配置文件.
+分别复制到target/classes和target/test-classes，其它目录下的配置打包时会被忽略.
 
 如果想把非resources下面的文件也打包到classes下面,需要配置pom.xml如下:
 ```properties
@@ -279,6 +433,8 @@ maven在打包时默认只将src/main/resources里的配置文件拷贝到项目
 ##### 常见标签的含义
 * modelVersion
 描述这个POM文件是遵从哪个版本的项目描述符
+* repositories/pluginRepositories
+前者是针对项目本身的依赖，后者是对maven命令需要的插件依赖地址(clean/install)
 * mirrorOf
 
 > 为某个仓库repository做镜像, 填写的是repository id, * 匹配所有的仓库
@@ -500,12 +656,8 @@ mvn archetype:generate
 ```
 
 ___
-##### maven command
-
-* 显示版本信息
-mvn -v
-
-* maven构建生命周期
+### maven command
+#### maven构建生命周期
 
 > maven的lifecyle是对构建过程进行的抽象
 > 它包含项目的清理、初始化、编译、测试、打包、集成测试、验证、部署和站点生成等几乎所有的构建步骤
@@ -518,9 +670,6 @@ clean	项目清理
 default(build)	项目部署
 site	项目站点文档创建
 
-
-
-* defualt(build)生命周期各阶段详解
 ```
 validate	验证项目是否正确，所有必要信息是否可用（很少单独使用）
 compile	编译项目的源代码（将src/main中的java代码编译成class文件，输出到targe目录下）
@@ -530,6 +679,11 @@ verify	检查包是否有效（很少单独使用）
 install	将jar部署到本地仓库，本地的其他模块依赖该jar包时，可以直接从本地仓库去获取
 deploy	将jar包部署到远端仓库，需要在maven的setting.xml中配置私服的用户名和密码，以及在pom.xml配置
 ```
+
+#### maven命令
+
+* 显示版本信息
+mvn -v
 
 mvn clean install -Dmaven.test.skip=true
 
@@ -542,6 +696,9 @@ mvn dependency:tree  -Doutput=jar包依赖关系.txt
 mvn dependency:tree -Dverbose -Doutput=jar包依赖关系.txt
 ```
 
+* 下载项目依赖源码(查看源码是.class文件，找不到sources)
+mvn dependency:resolve -Dclassifier=sources
+
 ___
 
 ##### JVM command
@@ -549,6 +706,11 @@ ___
 javac -encoding utf8 xxx.java(制定了file.encoding为utf8)
 -Djava.security.manager
 
+* java命令乱码
+
+默认字符集是在java虚拟机启动时决定的，依赖于java虚拟机所在的操作系统的区域及字符集.
+可以通过如 java -Dfile.encoding=UTF-8 -h来查看帮助，指定内容编码为utf8.
+-Dfile.encoding是设置系统属性file.encoding为UTF-8.
 
 ###### JVM参数
 * -Xss
@@ -561,7 +723,7 @@ javac -encoding utf8 xxx.java(制定了file.encoding为utf8)
 > OutofMemoryError: 无法创建新的本地线程(线程太多，每个线程都有很大的堆栈), 减少它
 
 
-
+___
 
 ##### 部署
 
@@ -622,3 +784,35 @@ mvn tomcat7:redeploy   //之后
 使用内嵌的tomcat插件进行debug
 Edit Configuration->Run/Debug Configurations->+->Maven->设置name,将Run填写为
 tomcat7:run->Apply->Run/Debug
+
+内嵌的tomcat插件使用的servlet api是tomcat-servlet-api-7.0.47.jar，2019年oracle将javax
+捐给eclipse基金会，sprint6与spring boot3将会采用jarkarta作为新的命名空间
+
+
+##### tomcat配置
+tomcat8以后URIEncoding的默认值为UTF-8(原来为ISO-885-1),只影响GET，对于POST请求，默认解析编码
+还是ISO-8859-1.
+
+**用户和权限**
+admin-gui — 可访问 "host管理" 页面，但"APP管理" 和 "服务器状态" 页面无查看权限
+manager-gui — 无 "host管理" 页面访问权限，有"APP管理" 和 "服务器状态" 页面查看权限
+manager-status — 只有"服务器状态" 页面查看权限
+manager-script — 有脚本方式管理接口访问权限和"服务器状态" 页面查看权限
+manager-jmx — JMX 代理接口访问权限和"服务器状态" 页面查看权限
+admin-script — 只有host-manager脚本方式管理接口访问权限
+
+
+> conf/tomcat-users.xml中配置
+```xml
+<tomcat-users>
+      <role rolename="tomcat"/>
+      <role rolename="role1"/>
+      <role rolename="manager-script"/>
+      <role rolename="manager-gui"/>
+      <role rolename="manager-status"/>
+      <role rolename="admin-gui"/>
+      <role rolename="admin-script"/>
+      <user username="tomcat" password="tomcat" roles="manager-gui,manager-script,tomcat,admin-gui,admin-script"/>
+</tomcat-users>
+
+```
