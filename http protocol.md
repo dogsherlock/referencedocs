@@ -131,6 +131,36 @@ Expires: Wed, 21 Oct 2015 07:28:00 GMT\r\n
 > [Content-Encoding](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Encoding)
 > 端到端首部
 
+
+##### Connection
+控制在当前事务完成之后时候继续保持网络连接，如果设置了keep-alive，则连接不会被关闭.
+所有被此消息使用的逐条首部(包括标准逐条首部Keep-Alive、Transfer-Encoding、TE、Connection、Trailer、Upgrade、 Proxy-Authorization and Proxy-Authenticate)，都需要在Connection头中列出，以便于第一个代理知道如何使用它们，并且
+不会向后传递它们.
+
+为forbidden header name,不能用程序更改.
+
+语法:
+```http
+Connection: keep-alive
+Connection: close
+```
+
+HTTP/1.0请求的默认值为close，HTTP/1.1的请求默认使用持久连接keep-alive
+
+
+##### Upgrade
+HTTP1.1(仅有)Upgrade头用于升级已经建立的客户端和服务端连接到一个不同的协议(在相同的传输协议之上).
+邀请服务器以优先级降序切换到所列协议中的一个或者多个. 在实践中，协议升级机制大多数用于发起一个websocket连接.
+HTTP/2明确禁止使用协议升级机制.
+如客户端可以升级连接HTTP1.1->HTTP2.0或HTTP/HTTPS->Websocket
+
+```http
+GET /index.html HTTP/1.1
+Host: www.example.com
+Connection: upgrade
+Upgrade: protocol1, protocol2
+```
+
 ___
 
 #### URL编码
@@ -146,6 +176,7 @@ ASCII TABLE:
 #### MIME类型
 
 ##### application/x-www-form-urlencoded
+form标签enctype默认是application/x-www-form-urlencoded
 1. 对于get请求的表单提交(method默认是get):
 ```html
 <!DOCTYPE html>
@@ -204,7 +235,7 @@ ___
 </head>
 <body>
 
-<form action="demo-form.php" method="POST">
+<form action="demo-form.php" method="POST" enctype="multipart/form-data">
 First name: <input type="text" name="FirstName" value="Mickey&你是笨蛋吗"><br>
 Last name: <input type="text" name="LastName" value="Mouse"><br>
 <input type="submit" value="提交">

@@ -13,7 +13,7 @@ wikipedia中的UTF8的BOM: EF BB BF是用来标识文件是UTF8的，FE FF和FF 
 ASCII等编码明确区分开来.
 
 #### ASCII
-> ![ascii表](./ASCII.gif)
+> ![ascii表](encoding/ASCII.gif)
 
 定义: 
 定义了128个字符的编码规则，范围为0x00-0x7F这些字符组成的集合就叫做ASCII字符集.

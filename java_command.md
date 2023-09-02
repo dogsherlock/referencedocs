@@ -4,9 +4,32 @@
 
 ##### maven
 maven提供了一系列的成熟的插件: http://maven.apache.org/plugins/index.html
+在选择插件或者依赖时，需要注意支持的jdk版本，否则会出现jdk版本和class file version不匹配的情况.
 
+spring framework与jdk版本关系:
+```
+6.0.x   JDK 17-21
+5.3.x   JDK 8-19
+5.2.x   JDK 8-15
+5.1.x   JDK 8-12
+5.0.x   JDK 8-10
+4.3.x   JDK 6-8
+```
 
+jdk与class file version对应关系:
+```
+JDK版本号  Class版本号    16进制
+1.1 45.0    00 00 00 2D
+1.2 46.0    00 00 00 2E
+1.3 47.0    00 00 00 2F
+1.4 48.0    00 00 00 30
+1.5 49.0    00 00 00 31
+1.6 50.0    00 00 00 32
+1.7 51.0    00 00 00 33
+1.8 52.0    00 00 00 34
+```
 ###### maven约定的目录结构
+
 src/main/java src/main/resources src/test/java src/test/resources
 target/classes/com.xxx.xx target/generated-sources/annotations target/maven-archiver 
 target/maven-status target/xxx.jar
@@ -355,6 +378,7 @@ install指令做了两件事情:
 
 ###### 常见插件
 * 编译器插件
+[maven-compiler-plugin](https://maven.apache.org/plugins/maven-compiler-plugin/compile-mojo.html)
 通过编译器插件，我们可以配置使用的jdk或者说编译器的版本
 
 在settings.xml文件中配置全局编译器插件,找到profiles节点，在里面加入profile节点
@@ -378,7 +402,9 @@ install指令做了两件事情:
 ```
 
 可以给特定项目配置编译器插件: pom.xml配置片段
-```properties
+maven-compiler-plugin插件是一个maven插件，用来编译项目代码，此插件3.0开始默认使用javax.tools.JavaCompiler来编译Java源码.此插件在3.0之前，默认的Java编译器是JDK自带的javac.
+eg1:
+```xml
 <!-- 配置maven的编译插件 -->
 <build>
     <plugins>
@@ -400,7 +426,63 @@ install指令做了两件事情:
 </build>
 ```
 
-* 资源拷贝插件
+eg2:
+```xml
+<plugin>
+    <!-- 指定maven编译的jdk版本,如果不指定,maven3默认用jdk 1.5 maven2默认用jdk1.3 -->
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <version>3.1</version>
+    <configuration>
+        <!-- 一般而言，target与source是保持一致的，但是，有时候为了让程序能在其他版本的jdk中运行(对于低版本目标jdk，源代码中不能使用低版本jdk中不支持的语法)，会存在target不同于source的情况 -->                    
+        <source>1.8</source> <!-- 源代码使用的JDK版本 -->
+        <target>1.8</target> <!-- 需要生成的目标class文件的编译版本 -->
+        <encoding>UTF-8</encoding><!-- 字符集编码 -->
+        <skipTests>true</skipTests><!-- 跳过测试 -->
+        <verbose>true</verbose>
+        <showWarnings>true</showWarnings>
+        <fork>true</fork><!-- 要使compilerVersion标签生效，还需要将fork设为true，用于明确表示编译版本配置的可用 -->
+        <executable><!-- path-to-javac --></executable><!-- 使用指定的javac命令，例如：<executable>${JAVA_1_4_HOME}/bin/javac</executable> -->
+        <compilerVersion>1.3</compilerVersion><!-- 指定插件将使用的编译器的版本 -->
+        <meminitial>128m</meminitial><!-- 编译器使用的初始内存 -->
+        <maxmem>512m</maxmem><!-- 编译器使用的最大内存 -->
+        <compilerArgument>-verbose -bootclasspath ${java.home}\lib\rt.jar</compilerArgument><!-- 这个选项用来传递编译器自身不包含但是却支持的参数选项 -->
+    </configuration>
+</plugin>
+```
+
+使用maven-compiler-plugin和maven.compiler.source/maven.compiler.target属性是等价的.
+下面两种配置是等价的.
+```properties
+<plugins>
+    <plugin>    
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+            <source>1.8</source>
+            <target>1.8</target>
+        </configuration>
+    </plugin>
+</plugins>
+```
+
+```properties
+<properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+</properties>
+``` 
+
+**使用自带的jdk**
+在pom.xml中配置:
+```xml
+<properties>
+    <forceJavacCompilerUse>true</forceJavacCompilerUse>
+<properties>
+```
+或者使用mvn "-Dmaven.compiler.forceJavacCompilerUse=true" compile命令
+
+
+* 资源拷贝插件maven-resources-plugin
 负责将配置文件复制到编译目录中.默认的编译目录为target/classes
 maven只会关注src/main/resources、src/test/resources目录下的配置文件.
 分别复制到target/classes和target/test-classes，其它目录下的配置打包时会被忽略.
@@ -514,7 +596,7 @@ profile可以让我们定义一系列的配置信息,然后指定其激活条件
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.compilerVersion>1.8</maven.compiler.compilerVersion>
       </properties>
-    </profile>
+</profile>
 ```
 
 * dependencyManagement
@@ -627,6 +709,36 @@ eg:
 </parent>
 ```
 
+* releases updatePolicy snapshots
+
+一般来说snapshots版本代表正在开发中的版本,release代表比较稳定的发布版本.
+```xml
+<repositories>
+    <repository>
+    <id>rdc-releases</id>
+        <url>https://xxx/</url>
+        <releases>
+        <!-- 告诉maven从这个仓库下载releases版本的构件. -->
+          <enabled>true</enabled>
+          <!-- 中央仓库都是deploy稳定、 正式版本的jar包.只要version不变换则jar包的内容也不会变化. 
+             私有仓库如nexus，相同的坐标可能在不同的时间点的jar包内容是变化的.
+             updatePolicy表示maven从远处仓库检查更新的频率.
+             never: 从不检查更新
+             always: 每次构建都检查更新
+             interval: X-每隔X分钟检查一次更新.
+             默认值是daily: 每天检查一次.
+          -->
+          <updatePolicy>always</updatePolicy>
+          <!--always、daily、interval、never-->
+        </releases>
+        <!-- 告诉maven不要从这个仓库下载snapshot版本的构件. -->
+        <snapshots>
+          <enabled>false</enabled>
+          <updatePolicy>always</updatePolicy>
+        </snapshots>
+  </repository>
+</repositories>
+```
 ___
 
 ##### maven插件创建工程
@@ -790,6 +902,8 @@ tomcat7:run->Apply->Run/Debug
 
 
 ##### tomcat配置
+HTTP Connector: 
+https://tomcat.apache.org/tomcat-8.0-doc/config/http.html
 tomcat8以后URIEncoding的默认值为UTF-8(原来为ISO-885-1),只影响GET，对于POST请求，默认解析编码
 还是ISO-8859-1.
 
@@ -815,4 +929,57 @@ admin-script — 只有host-manager脚本方式管理接口访问权限
       <user username="tomcat" password="tomcat" roles="manager-gui,manager-script,tomcat,admin-gui,admin-script"/>
 </tomcat-users>
 
+```
+
+
+* 将jetty内嵌到web项目中
+```xml
+<build>
+    <plugins>
+            <!--                    tomcat7-maven-plugin插件配置 mvn tomcat7:run运行-->
+            <plugin>
+                <groupId>org.apache.tomcat.maven</groupId>
+                <artifactId>tomcat7-maven-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <!-- 项目访问路径localhost:8080/hello -->
+                    <path>/hello</path>
+                    <!-- 配置Tomcat监听端口 -->
+                    <port>8080</port>
+                    <uriEncoding>UTF-8</uriEncoding>
+                </configuration>
+            </plugin>
+
+            <!--            jetty-maven-plugin配置   mvn jetty:run运行-->
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>9.4.51.v20230217</version>
+                <configuration>
+                    <webApp>
+                        <!-- 下面的“/”表示webapp下只放一个应用 -->
+                        <contextPath>/</contextPath>
+                    </webApp>
+                    <httpConnector>
+                        <port>8080</port>
+                        <host>localhost</host>
+                    </httpConnector>
+                    <scanIntervalSeconds>1</scanIntervalSeconds>
+                    <!-- 记录日志 -->
+                    <requestLog implementation="org.eclipse.jetty.server.NCSARequestLog">
+                        <!-- 日志的存放位置 -->
+                        <filename>target/access.log</filename>
+                        <!-- 日志的存放的时间 -->
+                        <retainDays>90</retainDays>
+                        <!-- 增加的方式 -->
+                        <append>false</append>
+                        <!-- 有无扩展信息 -->
+                        <extended>false</extended>
+                        <!-- 时区 -->
+                        <logTimeZone>GMT+8:00</logTimeZone>
+                    </requestLog>
+                </configuration>
+            </plugin>
+        </plugins>
+</build>
 ```

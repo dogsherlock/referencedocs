@@ -89,6 +89,20 @@ known_hosts 包含所有远程已经连接过已知的hosts, openssh会核对公
 蓝色： 原本有一个文件，改动过后没有提交（commit）是蓝色的，提交之后，变成正常颜色
 白色: 工作区的文件
 
+这几种颜色分别对应: untracked、staged、modified、unmodified.
+
+**四种状态的转变**
+
+* 新建文件--->Untracked
+
+* 使用add命令将新建的文件加入到暂存区--->Staged
+
+* 使用commit命令将暂存区的文件提交到本地仓库--->Unmodified
+
+* 如果对Unmodified状态的文件进行修改---> modified
+
+* 如果对Unmodified状态的文件进行remove操作--->Untracked
+
 
 ###### 常用命令
 
@@ -212,10 +226,18 @@ git diff --name-only
 * 显示某个文件的变化
 git diff --stat filename
 
+###### git log
+* git log --oneline 
+一行展示提交记录(哈希值和提交信息)
 
+* git log --author="clarence"
+根据作者筛选提交记录
 
+* git log --grep="ISSUE-43560"
+根据日志信息过滤提交记录，如果想使用大小写不敏感查询，可以使用-i参数
 
-
+* git log -nx
+x表示指定显示最新的x条记录
 
 ###### git show
 ```console 
@@ -337,7 +359,7 @@ squash 的意思是这个 commit 会被合并到前一个commit
 方法一：
 ```console
 git stash
-git checkout branch2 ~
+git checkout branch2
 git stash pop
 ```
 
@@ -349,3 +371,70 @@ git stash list ＃检查在不同分支中创建的各种存储
 git stash apply x ＃选择正确的一个
 注意：git stash apply，会将当前分支的最后一次缓存的内容释放出来
 ```
+
+###### git tag
+
+**Listing Your Tags**
+git tag 列出所有本地标签
+git tag -l "v1.8.5*" 列出所有与v1.8.5相关的标签
+
+**Creating Tags**
+two types of tags: lightweight/annotated.
+lightweight: just commit checksum stored in a file.
+
+```shell
+$ git show v1.4-lw
+commit ca82a6dff817ec66f44342007202690a93763949
+Author: Scott Chacon <schacon@gee-mail.com>
+Date:   Mon Mar 17 21:52:11 2008 -0700
+
+    Change version number
+```
+
+annotated is recommended, contain the tagger name, email and date, 
+have a tagging message.
+
+annotated: -a指定
+`git tag -a version -m "message"`
+
+show tag data along with the commit:
+```shell
+$ git show v1.4
+tag v1.4
+Tagger: Ben Straub <ben@straub.cc>
+Date:   Sat May 3 20:19:12 2014 -0700
+
+my version 1.4
+
+commit ca82a6dff817ec66f44342007202690a93763949
+Author: Scott Chacon <schacon@gee-mail.com>
+Date:   Mon Mar 17 21:52:11 2008 -0700
+
+    Change version number
+```
+
+Tagging Later:
+git tag -a version commit-checksum.
+```shell
+$ git log --pretty=oneline
+15027957951b64cf874c3557a0f3547bd83b3ff6 Merge branch 'experiment'
+9fceb02d0ae598e95dc970b74767f19372d61af8 Update rakefile
+8a5cbc430f1a9c3d00faaeffd07798508422908a Update readme
+
+$ git tag -a v1.2 9fceb02
+```
+
+Sharing Tags:
+默认情况下git push命令不会将tag传送到服务器.
+需要使用:
+1. git push origin <tagname> 
+2. 批量将所有服务器未包含的两种类型的tag传输过去 git push origin --tags.
+
+
+**Deleting Tags**
+delete a tag on your local repository, you can use `git tag -d <tagname>`.
+
+There are two common variations for deleting a tag from a remote server.
+The first variation is `git push <remote> :refs/tags/<tagname>:`
+The second (and more intuitive) way to delete a remote tag is with:
+`$ git push origin --delete <tagname>`

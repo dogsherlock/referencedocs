@@ -130,7 +130,6 @@ CTRL+SHIFT+I 快速在当前文件中查看某一个类的内容
 从子类覆写override的方法跳转到父类的方法或者从子类跳到父类 ctrl+u
 从父类的方法跳转到子类复写的override的方法 ctrl+alt+b
 
-
 文件操作：
 Ctrl+Alt+Insert new file, 创建文件
 Alt+Insert Generater, 生成Setter/Getter/构造器/toString等
@@ -140,9 +139,13 @@ Alt+字母 打开菜单栏上的对应字母开头的小标签
 > intelij idea 
 > 
 ```
+CTRL+SHIFT+I 快速在当前文件中查看某一个类的内容
 Ctrl+"+/-" 展开、折叠方法
+Ctrl+Q 查看类 方法 变量帮助文档.
 Ctrl+Shift+"+/-" 展开、折叠全部方法
 Ctrl+Shift+Alt+C 保存引用路径,适合快速复制类名等的所在路径
+Ctrl+Shift+F find in files.
+Ctrl+shift+r在整个项目或者指定目录内文件替换内容.
 Ctrl+E 查看最近使用的文件
 Ctrl+W递进式选择代码块
 Ctrl+D复制行
